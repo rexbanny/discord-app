@@ -26,6 +26,10 @@ client.on('messageCreate', async (message) => {
 
     if (message.author.bot) return;
 
+    if (message.content === 'salam' || message.content === 'Salam' || message.content === 'sa') {
+        return message.reply('Allahım yene geldi');
+    }
+
     if (message.content === '!qoşul') {
         const voiceChannel = message.member.voice.channel;
         if (!voiceChannel) {
@@ -45,6 +49,7 @@ client.on('messageCreate', async (message) => {
             message.reply('you must be in a voice channel to use this command! 🎤');
         }
     }
+
     if (message.content === '!çıx') {
         const connection = getVoiceConnection(message.guild.id);
 
