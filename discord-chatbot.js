@@ -25,13 +25,14 @@ const client = new Client({
     partials: [Partials.Channel]
 });
 
+//                             ⬇️
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
+//                             ⬆️
 client.once('ready', () => {
-    console.log(`${client.user.tag} onlayndır!`);
+    console.log(`${client.user.tag} online`);
 });
 
-// Gemini Live API-yə qoşulmaq və səsi idarə etmək üçün funksiya
+
 function setupLiveGemini(connection) {
     const URL = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${process.env.GEMINI_API_KEY}`;
     const ws = new WebSocket(URL);
@@ -44,8 +45,7 @@ function setupLiveGemini(connection) {
     audioPlayer.play(resource);
 
     ws.on('open', () => {
-        console.log('Gemini Live WebSocket-ə qoşuldu.');
-        // Setup mesajını göndəririk
+
         ws.send(JSON.stringify({
             setup: {
                 model: "models/gemini-2.0-flash-exp",
@@ -59,7 +59,7 @@ function setupLiveGemini(connection) {
 
     ws.on('message', (data) => {
         const response = JSON.parse(data.toString());
-        // Gemini-dən gələn səsi Discord-a yönəldirik
+
         if (response.serverContent?.modelTurn?.parts) {
             for (const part of response.serverContent.modelTurn.parts) {
                 if (part.inlineData && part.inlineData.mimeType.startsWith('audio/pcm')) {
@@ -70,7 +70,7 @@ function setupLiveGemini(connection) {
         }
     });
 
-    // İstifadəçi danışanda səsini tutub Gemini-yə göndəririk
+
     connection.receiver.speaking.on('start', (userId) => {
         const opusStream = connection.receiver.subscribe(userId, {
             end: { behavior: EndBehaviorType.AfterSilence, duration: 100 }
@@ -93,7 +93,7 @@ function setupLiveGemini(connection) {
         });
     });
 
-    // Əlaqə kəsiləndə WebSocket-i bağlayırıq
+
     connection.on('stateChange', (oldState, newState) => {
         if (newState.status === 'destroyed' || newState.status === 'disconnected') {
             ws.close();
@@ -104,11 +104,7 @@ function setupLiveGemini(connection) {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
-    if (message.content === 'salam' || message.content === 'Salam' || message.content === 'sa') {
-        return message.reply('Allahım yene geldi');
-    }
-
-    if (message.content === '!qoşul') {
+    if (message.content === '!join') {
         const voiceChannel = message.member.voice.channel;
         if (!voiceChannel) {
             return message.reply('you must be in a voice channel to use this command! 🎤');
@@ -118,37 +114,37 @@ client.on('messageCreate', async (message) => {
                 channelId: voiceChannel.id,
                 guildId: message.guild.id,
                 adapterCreator: message.guild.voiceAdapterCreator,
-                selfDeaf: false // Səsi eşitməsi üçün karlar rejimini söndürürük
+                selfDeaf: false
             });
 
-            // WebSocket səs inteqrasiyasını başladırıq
+
             setupLiveGemini(connection);
 
-            message.reply(`"${voiceChannel.name}" gəldim hocam. Mənə səsli nəsə de!`);
+            message.reply(`"${voiceChannel.name}" i'm here`);
         } catch (error) {
             console.error(error);
-            message.reply('geri zekalımısın bir səsli söhbətə gir ondan sonra meni çağır');
+            message.reply('you need to join any voice chat');
         }
     }
 
-    if (message.content === '!çıx') {
+    if (message.content === '!leave') {
         const connection = getVoiceConnection(message.guild.id);
         if (connection) {
             connection.destroy();
-            message.reply('Ohh be sonunda');
+            message.reply('goodbye');
         } else {
             message.reply('You are not in a voice channel.');
         }
     }
 
-    // Orijinal Mətn-əsaslı AI yanıtı hissəsi (DM və Mention üçün)
+    // DM and Mention 
     const isMentioned = message.mentions.has(client.user) && !message.mentions.everyone;
     const isDM = !message.guild;
 
     if (isMentioned || isDM) {
         let userPrompt = message.content.replace(`<@${client.user.id}>`, '').trim();
         if (!userPrompt) {
-            return message.reply('Nevar abi?');
+            return message.reply('Yes?');
         }
 
         await message.channel.sendTyping();
@@ -173,5 +169,6 @@ client.on('messageCreate', async (message) => {
         }
     }
 });
-
+//                   ⬇️
 client.login(process.env.DISCORD_TOKEN);
+//                   ⬆️
