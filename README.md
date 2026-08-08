@@ -68,3 +68,25 @@ cd discord-gemini-bot
 
 # Install required npm packages
 npm install
+
+Step 4: Environment Setup (.env)
+  > To keep your sensitive credentials safe, create a .env file in the root directory of the project:
+    # Create .env file
+    touch .env
+    Open the .env file in your preferred code editor and add your API credentials:
+      DISCORD_TOKEN=your_discord_bot_token_here
+      GEMINI_API_KEY=your_gemini_api_key_here
+    ⚠️ Important: Never share your .env file or commit it to a public GitHub repository. Ensure .env is listed inside your .gitignore file.
+
+
+Step 5: Run the Bot
+Once the setup is complete, start your bot by running the following command in your terminal:
+    >  node discord-chatbot.js
+
+
+
+Command / Event,Description
+!join,Bot joins your current voice channel.
+!leave,Bot leaves the voice channel.
+@BotMention <prompt>,Sends prompt to Gemini AI and replies with the response.
+Direct Message (DM),Send any text message to receive an AI response.
